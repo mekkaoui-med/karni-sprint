@@ -1,0 +1,61 @@
+{
+  "app": "karni",
+  "version": 1,
+  "exporteLe": "2026-10-30T18:05:12.000Z",
+  "clients": [
+    {
+      "id": "c-1",
+      "nom": "<script>alert('karni')</script>",
+      "telephone": "0812345678",
+      "plafond": 50.5,
+      "creeLe": "2026-10-01"
+    },
+    {
+      "id": "c-1",
+      "nom": "Hicham Berrada",
+      "telephone": "",
+      "plafond": 80000,
+      "creeLe": "2030-01-01"
+    },
+    {
+      "id": "c-2",
+      "nom": "Leila Fassi",
+      "plafond": 80000,
+      "creeLe": "2026-10-01"
+    }
+  ],
+  "operations": [
+    {
+      "id": "o-1",
+      "clientId": "c-2",
+      "type": "achat",
+      "montant": -500,
+      "libelle": "Pain",
+      "date": "2026-10-03"
+    },
+    {
+      "id": "o-2",
+      "clientId": "c-99",
+      "type": "achat",
+      "montant": 1200,
+      "libelle": "Lait",
+      "date": "2026-10-04"
+    },
+    {
+      "id": "o-3",
+      "clientId": "c-2",
+      "type": "credit",
+      "montant": 1200,
+      "libelle": "Œufs",
+      "date": "2026-02-30"
+    },
+    {
+      "id": "o-4",
+      "clientId": "c-2",
+      "type": "achat",
+      "montant": "45,50",
+      "libelle": "",
+      "date": "2026-10-06"
+    }
+  ]
+}

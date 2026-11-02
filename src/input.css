@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Design tokens de Karni : les contrastes texte / fond ont été vérifiés (WCAG AA). */
+@theme {
+  --color-karni-papier: #f5f1e8;
+  --color-karni-encre: #1e2a3a;
+  --color-karni-bleu: #1d4e89;
+  --color-karni-bleu-clair: #dde8f5;
+  --color-karni-bordure: #c8c0ae;
+  --color-karni-vert: #1f6b45;
+  --color-karni-vert-clair: #dcefe3;
+  --color-karni-ambre: #7a4f00;
+  --color-karni-ambre-clair: #fbefd5;
+  --color-karni-rouge: #a3222a;
+  --color-karni-rouge-clair: #f8e0e0;
+  --font-sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* États que tu bascules depuis JavaScript avec classList (ne mets jamais de style dans le JS). */
+@layer components {
+  .champ-invalide {
+    @apply border-karni-rouge ring-2 ring-karni-rouge/30;
+  }
+
+  /* Badges de statut : <span class="badge badge-en-dette">En dette</span> */
+  .badge {
+    @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+
+  .badge-a-jour {
+    @apply bg-karni-vert-clair text-karni-vert;
+  }
+
+  .badge-en-dette {
+    @apply bg-karni-ambre-clair text-karni-ambre;
+  }
+
+  .badge-en-retard {
+    @apply bg-karni-rouge-clair text-karni-rouge;
+  }
+
+  .badge-plafond {
+    @apply bg-karni-encre text-white;
+  }
+
+  /* Montant d'une opération dans l'historique. */
+  .operation-achat .operation-montant {
+    @apply text-karni-rouge;
+  }
+
+  .operation-remboursement .operation-montant {
+    @apply text-karni-vert;
+  }
+}

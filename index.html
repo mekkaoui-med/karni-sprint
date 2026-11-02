@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Karni — le carnet de crédit de l'épicerie</title>
+    <meta
+      name="description"
+      content="Karni : le carnet de crédit du hanout, sans papier ni connexion."
+    />
+    <link rel="stylesheet" href="assets/style.css" />
+    <script type="module" src="src/js/main.js"></script>
+  </head>
+
+  <body class="bg-karni-papier font-sans text-karni-encre antialiased">
+    <a
+      href="#contenu"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-karni-bleu focus:px-4 focus:py-2 focus:text-white"
+      >Aller au contenu</a
+    >
+
+    <header class="border-b border-karni-bordure bg-white">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
+        <p class="text-2xl font-bold text-karni-bleu">Karni</p>
+        <p class="text-sm text-karni-encre/80">Le carnet de crédit du hanout</p>
+      </div>
+    </header>
+
+    <!-- Bandeau d'erreur de stockage (US-05) : caché par défaut, à afficher en retirant la classe hidden. -->
+    <div
+      id="erreur-stockage"
+      role="alert"
+      class="hidden border-b border-karni-rouge bg-karni-rouge-clair px-4 py-3 text-center font-medium text-karni-rouge"
+    >
+      <p id="erreur-stockage-message"></p>
+    </div>
+
+    <main id="contenu" class="mx-auto max-w-5xl space-y-6 px-4 py-8">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold">Mon carnet</h1>
+
+        <!-- Actions générales (US-01, US-06, US-07, US-08). -->
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            id="nouveau-client"
+            class="rounded bg-karni-bleu px-4 py-2 font-semibold text-white hover:bg-karni-bleu/90 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Nouveau client
+          </button>
+          <button
+            type="button"
+            id="exporter"
+            class="rounded border border-karni-bleu px-4 py-2 font-medium text-karni-bleu hover:bg-karni-bleu-clair focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Exporter
+          </button>
+          <button
+            type="button"
+            id="importer"
+            class="rounded border border-karni-bleu px-4 py-2 font-medium text-karni-bleu hover:bg-karni-bleu-clair focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Importer
+          </button>
+          <!-- Sélecteur de fichier caché : le bouton « Importer » l'ouvre avec .click(). -->
+          <input id="import-fichier" type="file" accept=".json,application/json" class="hidden" />
+          <button
+            type="button"
+            id="charger-demo"
+            class="rounded border border-karni-bordure bg-white px-4 py-2 font-medium hover:bg-karni-papier focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Charger la démo
+          </button>
+          <button
+            type="button"
+            id="vider-carnet"
+            class="rounded border border-karni-rouge bg-white px-4 py-2 font-medium text-karni-rouge hover:bg-karni-rouge-clair focus:outline-2 focus:outline-offset-2 focus:outline-karni-rouge"
+          >
+            Vider le carnet
+          </button>
+        </div>
+      </div>
+
+      <!-- Zone de notification : chaque action réussie ou refusée y est annoncée. -->
+      <p id="notification" aria-live="polite" class="min-h-6 font-medium text-karni-bleu"></p>
+
+      <!-- ================= TABLEAU DE BORD (US-03) ================= -->
+      <section aria-labelledby="titre-tableau-bord">
+        <h2 id="titre-tableau-bord" class="sr-only">Tableau de bord</h2>
+        <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="rounded-lg border border-karni-bordure bg-white p-4">
+            <dt class="text-sm text-karni-encre/80">Total dû à l'épicerie</dt>
+            <dd id="total-du" class="text-xl font-bold text-karni-bleu">0,00 MAD</dd>
+          </div>
+          <div class="rounded-lg border border-karni-bordure bg-white p-4">
+            <dt class="text-sm text-karni-encre/80">Clients</dt>
+            <dd id="nb-clients" class="text-xl font-bold text-karni-bleu">0</dd>
+          </div>
+          <div class="rounded-lg border border-karni-bordure bg-white p-4">
+            <dt class="text-sm text-karni-encre/80">Clients en dette</dt>
+            <dd id="nb-en-dette" class="text-xl font-bold text-karni-ambre">0</dd>
+          </div>
+          <div class="rounded-lg border border-karni-bordure bg-white p-4">
+            <dt class="text-sm text-karni-encre/80">Clients en retard</dt>
+            <dd id="nb-en-retard" class="text-xl font-bold text-karni-rouge">0</dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- ================= CLIENTS (US-01, US-04) ================= -->
+      <section aria-labelledby="titre-clients" class="space-y-4">
+        <h2 id="titre-clients" class="text-xl font-bold">Clients</h2>
+
+        <div class="grid gap-3 rounded-lg border border-karni-bordure bg-white p-4 sm:grid-cols-3">
+          <div>
+            <label for="recherche" class="block text-sm font-medium">Rechercher un client</label>
+            <input
+              id="recherche"
+              type="search"
+              autocomplete="off"
+              class="mt-1 w-full rounded border border-karni-bordure px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+            />
+          </div>
+          <div>
+            <label for="filtre-statut" class="block text-sm font-medium">Statut</label>
+            <select
+              id="filtre-statut"
+              class="mt-1 w-full rounded border border-karni-bordure bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+            >
+              <option value="tous">Tous</option>
+              <option value="a-jour">À jour</option>
+              <option value="en-dette">En dette</option>
+              <option value="en-retard">En retard</option>
+            </select>
+          </div>
+          <div>
+            <label for="tri" class="block text-sm font-medium">Trier par</label>
+            <select
+              id="tri"
+              class="mt-1 w-full rounded border border-karni-bordure bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+            >
+              <option value="nom">Nom (A → Z)</option>
+              <option value="solde">Solde (le plus élevé d'abord)</option>
+              <option value="recent">Dernière opération (la plus récente d'abord)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- État vide : carnet sans aucun client. -->
+        <div
+          id="etat-vide"
+          class="rounded-lg border border-dashed border-karni-bordure bg-white p-8 text-center"
+        >
+          <p class="font-medium">Aucun client dans le carnet.</p>
+          <p class="mt-1 text-sm text-karni-encre/80">
+            Ajoutez un client avec « Nouveau client », ou chargez la démo.
+          </p>
+        </div>
+
+        <!-- État « aucun résultat » : des clients existent mais aucun ne correspond aux filtres. -->
+        <div
+          id="etat-aucun-resultat"
+          class="hidden rounded-lg border border-dashed border-karni-bordure bg-white p-8 text-center"
+        >
+          <p class="font-medium">Aucun client ne correspond à votre recherche.</p>
+          <button
+            type="button"
+            id="reinitialiser-filtres"
+            class="mt-3 rounded border border-karni-bleu px-4 py-2 font-medium text-karni-bleu hover:bg-karni-bleu-clair focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Réinitialiser les filtres
+          </button>
+        </div>
+
+        <!-- Les clients sont ajoutés par ton JavaScript, à partir du modèle #modele-client. -->
+        <ul id="liste-clients" class="space-y-3"></ul>
+      </section>
+    </main>
+
+    <!-- ================= MODÈLES À CLONER (template.content.cloneNode(true)) ================= -->
+    <template id="modele-client">
+      <li
+        class="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-karni-bordure bg-white p-4"
+        data-client-id=""
+      >
+        <div class="min-w-0 flex-1">
+          <button
+            type="button"
+            data-action="ouvrir-fiche"
+            class="client-nom text-left text-lg font-semibold text-karni-bleu underline-offset-2 hover:underline focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          ></button>
+          <p class="client-telephone text-sm text-karni-encre/80"></p>
+        </div>
+        <p class="client-solde text-lg font-bold"></p>
+        <p class="client-badges flex flex-wrap gap-1"></p>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            data-action="modifier-client"
+            class="rounded border border-karni-bordure px-3 py-1.5 text-sm font-medium hover:bg-karni-papier focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Modifier<span class="nom-sr sr-only"></span>
+          </button>
+          <button
+            type="button"
+            data-action="supprimer-client"
+            class="rounded border border-karni-rouge px-3 py-1.5 text-sm font-medium text-karni-rouge hover:bg-karni-rouge-clair focus:outline-2 focus:outline-offset-2 focus:outline-karni-rouge"
+          >
+            Supprimer<span class="nom-sr sr-only"></span>
+          </button>
+        </div>
+      </li>
+    </template>
+
+    <template id="modele-operation">
+      <!-- Ajoute la classe operation-achat ou operation-remboursement sur le <li>. -->
+      <li class="flex items-center gap-3 py-3" data-operation-id="">
+        <div class="min-w-0 flex-1">
+          <p class="operation-libelle font-medium"></p>
+          <p class="operation-date text-sm text-karni-encre/80"></p>
+        </div>
+        <p class="operation-montant font-bold"></p>
+        <button
+          type="button"
+          data-action="supprimer-operation"
+          class="rounded border border-karni-bordure px-2.5 py-1 text-sm hover:bg-karni-papier focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+        >
+          Supprimer<span class="nom-sr sr-only"></span>
+        </button>
+      </li>
+    </template>
+
+    <!-- ================= FENÊTRE CLIENT : ajout et modification (US-01) ================= -->
+    <dialog
+      id="dialog-client"
+      aria-labelledby="dialog-client-titre"
+      class="m-auto w-[min(92vw,28rem)] rounded-lg border border-karni-bordure bg-white p-6 text-karni-encre backdrop:bg-karni-encre/50"
+    >
+      <h2 id="dialog-client-titre" class="text-xl font-bold">Nouveau client</h2>
+
+      <form id="form-client" novalidate class="mt-4 space-y-4">
+        <!-- Vide pour un ajout, contient l'id du client pour une modification. -->
+        <input type="hidden" id="client-id" />
+
+        <div>
+          <label for="client-nom" class="block font-medium">Nom</label>
+          <input
+            id="client-nom"
+            type="text"
+            autocomplete="off"
+            class="mt-1 w-full rounded border border-karni-bordure px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          />
+          <p id="client-nom-erreur" class="mt-1 hidden text-sm font-medium text-karni-rouge"></p>
+        </div>
+
+        <div>
+          <label for="client-telephone" class="block font-medium">
+            Téléphone <span class="font-normal text-karni-encre/80">(facultatif)</span>
+          </label>
+          <input
+            id="client-telephone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="off"
+            class="mt-1 w-full rounded border border-karni-bordure px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          />
+          <p id="client-telephone-erreur" class="mt-1 hidden text-sm font-medium text-karni-rouge"></p>
+        </div>
+
+        <div>
+          <label for="client-plafond" class="block font-medium">Plafond de crédit (MAD)</label>
+          <input
+            id="client-plafond"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            class="mt-1 w-full rounded border border-karni-bordure px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          />
+          <p id="client-plafond-erreur" class="mt-1 hidden text-sm font-medium text-karni-rouge"></p>
+        </div>
+
+        <div class="flex flex-wrap gap-3 pt-2">
+          <button
+            type="submit"
+            class="rounded bg-karni-bleu px-5 py-2 font-semibold text-white hover:bg-karni-bleu/90 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Enregistrer
+          </button>
+          <button
+            type="button"
+            id="client-annuler"
+            class="rounded border border-karni-bordure px-5 py-2 font-medium hover:bg-karni-papier focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Annuler
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- ================= FICHE CLIENT : solde, opérations, historique (US-02) ================= -->
+    <dialog
+      id="fiche-client"
+      aria-labelledby="fiche-nom"
+      class="m-auto max-h-[90vh] w-[min(94vw,40rem)] rounded-lg border border-karni-bordure bg-white p-6 text-karni-encre backdrop:bg-karni-encre/50"
+    >
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="fiche-nom" class="text-xl font-bold"></h2>
+          <p id="fiche-telephone" class="text-sm text-karni-encre/80"></p>
+        </div>
+        <p id="fiche-badges" class="flex flex-wrap gap-1"></p>
+      </div>
+
+      <dl class="mt-4 grid grid-cols-3 gap-3 text-center">
+        <div class="rounded border border-karni-bordure p-3">
+          <dt class="text-sm text-karni-encre/80">Solde</dt>
+          <dd id="fiche-solde" class="font-bold"></dd>
+        </div>
+        <div class="rounded border border-karni-bordure p-3">
+          <dt class="text-sm text-karni-encre/80">Plafond</dt>
+          <dd id="fiche-plafond" class="font-bold"></dd>
+        </div>
+        <div class="rounded border border-karni-bordure p-3">
+          <dt class="text-sm text-karni-encre/80">Crédit disponible</dt>
+          <dd id="fiche-disponible" class="font-bold"></dd>
+        </div>
+      </dl>
+
+      <form id="form-operation" novalidate class="mt-5 space-y-4 rounded-lg bg-karni-papier p-4">
+        <fieldset>
+          <legend class="font-medium">Nouvelle opération</legend>
+          <div class="mt-2 flex flex-wrap gap-4">
+            <label class="flex items-center gap-2">
+              <input type="radio" name="operation-type" value="achat" checked class="accent-karni-bleu" />
+              Achat à crédit
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="operation-type" value="remboursement" class="accent-karni-bleu" />
+              Remboursement
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="operation-montant" class="block font-medium">Montant (MAD)</label>
+            <input
+              id="operation-montant"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              class="mt-1 w-full rounded border border-karni-bordure bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+            />
+            <p id="operation-montant-erreur" class="mt-1 hidden text-sm font-medium text-karni-rouge"></p>
+          </div>
+          <div>
+            <label for="operation-date" class="block font-medium">Date</label>
+            <input
+              id="operation-date"
+              type="date"
+              class="mt-1 w-full rounded border border-karni-bordure bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+            />
+            <p id="operation-date-erreur" class="mt-1 hidden text-sm font-medium text-karni-rouge"></p>
+          </div>
+        </div>
+
+        <div>
+          <label for="operation-libelle" class="block font-medium">Libellé</label>
+          <input
+            id="operation-libelle"
+            type="text"
+            autocomplete="off"
+            class="mt-1 w-full rounded border border-karni-bordure bg-white px-3 py-2 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          />
+          <p id="operation-libelle-erreur" class="mt-1 hidden text-sm font-medium text-karni-rouge"></p>
+        </div>
+
+        <button
+          type="submit"
+          class="rounded bg-karni-bleu px-5 py-2 font-semibold text-white hover:bg-karni-bleu/90 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+        >
+          Enregistrer l'opération
+        </button>
+      </form>
+
+      <section aria-labelledby="titre-historique" class="mt-5">
+        <h3 id="titre-historique" class="font-bold">Historique</h3>
+        <p id="historique-vide" class="mt-2 text-sm text-karni-encre/80">Aucune opération pour ce client.</p>
+        <!-- Les opérations sont ajoutées par ton JavaScript, à partir du modèle #modele-operation. -->
+        <ul id="historique" class="divide-y divide-karni-bordure"></ul>
+      </section>
+
+      <button
+        type="button"
+        id="fiche-fermer"
+        class="mt-6 rounded border border-karni-bordure px-5 py-2 font-medium hover:bg-karni-papier focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+      >
+        Fermer
+      </button>
+    </dialog>
+
+    <!-- ================= CONFIRMATION : suppressions, import, démo, vider (US-01, US-02, US-07, US-08) ================= -->
+    <!-- method="dialog" : le bouton cliqué ferme la fenêtre et sa value se lit dans dialog.returnValue. -->
+    <dialog
+      id="dialog-confirmation"
+      aria-labelledby="confirmation-titre"
+      class="m-auto w-[min(92vw,30rem)] rounded-lg border border-karni-bordure bg-white p-6 text-karni-encre backdrop:bg-karni-encre/50"
+    >
+      <form method="dialog">
+        <h2 id="confirmation-titre" class="text-xl font-bold"></h2>
+        <p id="confirmation-message" class="mt-3"></p>
+        <!-- Liste facultative : erreurs d'un import refusé, par exemple. -->
+        <ul id="confirmation-details" class="mt-3 list-inside list-disc space-y-1 text-sm text-karni-rouge"></ul>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button
+            type="submit"
+            value="valider"
+            id="confirmation-valider"
+            class="rounded bg-karni-bleu px-5 py-2 font-semibold text-white hover:bg-karni-bleu/90 focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Confirmer
+          </button>
+          <button
+            type="submit"
+            value="annuler"
+            id="confirmation-annuler"
+            class="rounded border border-karni-bordure px-5 py-2 font-medium hover:bg-karni-papier focus:outline-2 focus:outline-offset-2 focus:outline-karni-bleu"
+          >
+            Annuler
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer class="mt-8 border-t border-karni-bordure bg-white">
+      <p class="mx-auto max-w-5xl px-4 py-4 text-sm text-karni-encre/80">
+        Karni — projet pédagogique YouCode.
+      </p>
+    </footer>
+  </body>
+</html>

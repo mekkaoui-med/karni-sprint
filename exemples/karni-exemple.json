@@ -1,0 +1,78 @@
+{
+  "app": "karni",
+  "version": 1,
+  "exporteLe": "2026-10-30T18:05:12.000Z",
+  "clients": [
+    {
+      "id": "c-1a2b",
+      "nom": "Nadia El Amrani",
+      "telephone": "0677889900",
+      "plafond": 120000,
+      "creeLe": "2026-09-14"
+    },
+    {
+      "id": "c-3c4d",
+      "nom": "Mohamed-Amine Chraïbi",
+      "telephone": "",
+      "plafond": 60000,
+      "creeLe": "2026-10-02"
+    },
+    {
+      "id": "c-5e6f",
+      "nom": "Aïcha O'Brien",
+      "telephone": "0533221100",
+      "plafond": 5000,
+      "creeLe": "2026-10-20"
+    }
+  ],
+  "operations": [
+    {
+      "id": "o-0001",
+      "clientId": "c-1a2b",
+      "type": "achat",
+      "montant": 34990,
+      "libelle": "Courses du mois",
+      "date": "2026-09-28"
+    },
+    {
+      "id": "o-0002",
+      "clientId": "c-1a2b",
+      "type": "remboursement",
+      "montant": 20000,
+      "libelle": "",
+      "date": "2026-10-10"
+    },
+    {
+      "id": "o-0003",
+      "clientId": "c-3c4d",
+      "type": "achat",
+      "montant": 1250,
+      "libelle": "<b>Sucre</b> 2 kg",
+      "date": "2026-10-05"
+    },
+    {
+      "id": "o-0004",
+      "clientId": "c-3c4d",
+      "type": "achat",
+      "montant": 7,
+      "libelle": "Bonbon",
+      "date": "2026-10-05"
+    },
+    {
+      "id": "o-0005",
+      "clientId": "c-5e6f",
+      "type": "achat",
+      "montant": 5000,
+      "libelle": "Bonbonne de gaz",
+      "date": "2026-10-21"
+    },
+    {
+      "id": "o-0006",
+      "clientId": "c-5e6f",
+      "type": "remboursement",
+      "montant": 5000,
+      "libelle": "Réglé en espèces",
+      "date": "2026-10-28"
+    }
+  ]
+}

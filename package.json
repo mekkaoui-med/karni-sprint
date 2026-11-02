@@ -1,0 +1,14 @@
+{
+  "name": "karni",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Karni — carnet de crédit de l'épicerie (kit de départ du Sprint 2, Brief 3)",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./assets/style.css --minify",
+    "dev": "tailwindcss -i ./src/input.css -o ./assets/style.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}
