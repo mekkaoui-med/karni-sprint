@@ -1,7 +1,5 @@
 // starter of the project 
 export const state = {
-    clients : [],
-    operation : [],
+    clients: [],
+    operations: [],
 };
-
-stae
