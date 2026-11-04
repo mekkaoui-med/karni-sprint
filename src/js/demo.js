@@ -3,6 +3,7 @@
 // à jour, en dette, en retard, plafond atteint.
 
 // Date locale au format AAAA-MM-JJ, `jours` jours avant aujourd'hui.
+import { state } from "./state.js";
 const ilYa = (jours) => {
   const date = new Date();
   date.setDate(date.getDate() - jours);
@@ -51,3 +52,18 @@ export const creerDemo = () => ({
     { id: "o-demo-15", clientId: "c-demo-6", type: "remboursement", montant: 750, libelle: "", date: ilYa(2) },
   ],
 });
+
+export function chargeDemo(){
+  const data = creerDemo()
+  state.clients = data.clients;
+  state.operations = data.operations;
+  return{
+    ok : true
+  }
+}
+export function viderCarnet() {
+  state.clients = [];
+  state.operations = [];
+
+  return { ok: true };
+}
