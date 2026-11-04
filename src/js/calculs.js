@@ -43,24 +43,18 @@ export function dateReferenceRetard(clientId,operations){
 
 export function calculerStatut(client, operations, aujourdhui) {
   const solde = calculerSolde(client.id, operations);
- 
+
   if (solde === 0) {
     return "À jour";
   }
- 
+
   const reference = dateReferenceRetard(client.id, operations);
   const jours = joursDepuis(reference, aujourdhui);
- 
+
   if (jours > 30) {
     return "En retard";
   }
- 
-  const credit = calculerCreditDisponible(client, operations);
- 
-  if (credit <= 0) {
-    return "Plafond atteint";
-  }
- 
+
   return "En dette";
 }
 
@@ -108,4 +102,8 @@ export function formaterMontant(centimes) {
   const reste = centimes % 100;
   const resteTexte = String(reste).padStart(2, "0");
   return dirhams + "," + resteTexte + " MAD";
+}
+
+export function estAuPlafond(client, operations) {
+  return calculerCreditDisponible(client, operations) <= 0;
 }
