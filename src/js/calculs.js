@@ -4,8 +4,9 @@ export const STATUT_EN_DETTE = "en-dette";
 export const STATUT_EN_RETARD = "en-retard";
  
 
-export const JOURS_AVANT_RETARD = 30;
  
+
+export const JOURS_AVANT_RETARD = 30;
  
 
 export function dateDuJour() {
@@ -14,7 +15,6 @@ export function dateDuJour() {
   const jour = String(maintenant.getDate()).padStart(2, "0");
   return maintenant.getFullYear() + "-" + mois + "-" + jour;
 }
- 
  
 
 export function calculerSolde(clientId, operations) {
@@ -33,7 +33,6 @@ export function calculerSolde(clientId, operations) {
   return solde;
 }
  
-
 export function calculerCreditDisponible(client, operations) {
   const credit = client.plafond - calculerSolde(client.id, operations);
   if (credit < 0) {
@@ -104,16 +103,17 @@ export function calculerStatut(client, operations, aujourdhui) {
  
   const solde = calculerSolde(client.id, operations);
   if (solde <= 0) {
-    return STATUT_A_JOUR; 
+    return STATUT_A_JOUR; // il ne doit rien
   }
  
   const reference = dateReferenceRetard(client.id, operations);
-
+  // "Plus de 30 jours" : 30 jours exactement n'est PAS en retard, 31 jours oui.
   if (reference !== null && joursDepuis(reference, aujourdhui) > JOURS_AVANT_RETARD) {
     return STATUT_EN_RETARD;
   }
   return STATUT_EN_DETTE;
 }
+ 
  
 
 export function calculerTableauDeBord(clients, operations, aujourdhui) {
@@ -129,6 +129,7 @@ export function calculerTableauDeBord(clients, operations, aujourdhui) {
     const solde = calculerSolde(client.id, operations);
     totalDu = totalDu + solde;
  
+   
     if (solde > 0) {
       clientsEnDette = clientsEnDette + 1;
     }
@@ -179,7 +180,7 @@ export function filtrerClients(clients, statut, operations, aujourdhui) {
     aujourdhui = dateDuJour();
   }
   if (statut === "tous" || statut === undefined) {
-    return [...clients]; 
+    return [...clients];
   }
  
   const resultat = [];
@@ -201,7 +202,7 @@ export function filtrerClients(clients, statut, operations, aujourdhui) {
  
 
 export function trierClients(clients, critere, operations) {
-  const copie = [...clients]; 
+  const copie = [...clients]; // 
  
   copie.sort(function (a, b) {
     let resultat = 0;
@@ -218,7 +219,7 @@ export function trierClients(clients, critere, operations) {
     if (resultat !== 0) {
       return resultat;
     }
-
+   
     return a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" });
   });
  
@@ -236,8 +237,7 @@ export function formaterMontant(centimes) {
   }
  
   const dirhams = Math.floor(absolu / 100);
-  const reste = String(absolu % 100).padStart(2, "0");
+  const reste = String(absolu % 100).padStart(2, "0"); 
  
   return signe + dirhams.toLocaleString("fr-FR") + "," + reste + " MAD";
 }
-
