@@ -1,35 +1,21 @@
-// starter of the project
-
 import { state } from "./state.js";
 import { validateClient } from "./validation.js";
-//  just testing the github
-function normalizeName(nom) {
-  return nom
-    .trim()
-    .replace(/\s+/g, " ")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
+import { calculerSolde } from "./calculs.js";
+
+export function trouverClient(id) {
+  return state.clients.find((client) => client.id === id) || null;
 }
 
 export function ajoutClient(newClient) {
-  const erreurs = validateClient(newClient);
-  if (erreurs.length > 0) {
+  // Validation en passant la liste actuelle pour tester l'unicité du nom
+  const resultat = validateClient(newClient, state.clients);
+  if (resultat.status === "invalid") {
     return {
       ok: false,
-      erreurs,
+      erreurs: resultat.errors, // Ex: { nom: "Ce nom existe déjà." }
     };
   }
-  const nomNormalize = normalizeName(newClient.nom);
-  const nameExiste = state.clients.some(
-    (client) => normalizeName(client.nom) === nomNormalize,
-  );
-  if (nameExiste) {
-    return {
-      ok: false,
-      erreurs: ["Un client avec ce nom existe déjà."],
-    };
-  }
+
   state.clients.push(newClient);
   return {
     ok: true,
@@ -37,36 +23,25 @@ export function ajoutClient(newClient) {
   };
 }
 
-export function trouverClient(id) {
-  return state.clients.find((client) => client.id === id) || null;
-}
-
 export function modifieClient(id, nouvellData) {
   const client = trouverClient(id);
   if (!client) {
     return {
       ok: false,
-      erreurs: ["clinet don't exist"],
+      erreurs: { general: "Client introuvable." },
     };
   }
-  const erreurs = validateClient(nouvellData);
-  if (erreurs.length > 0) {
+
+  // On valide les données mises à jour
+  const clientModifie = { ...client, ...nouvellData };
+  const resultat = validateClient(clientModifie, state.clients);
+  if (resultat.status === "invalid") {
     return {
       ok: false,
-      erreurs,
+      erreurs: resultat.errors,
     };
   }
-  const nameExiste = state.clients.some(
-    (aoutherClient) =>
-      aoutherClient.id !== id &&
-      normalizeName(aoutherClient.nom) === normalizeName(nouvellData.nom),
-  );
-  if (nameExiste) {
-    return {
-      ok: false,
-      erreurs: ["Un autre client utilise déjà ce nom."],
-    };
-  }
+
   Object.assign(client, nouvellData);
   return {
     ok: true,
@@ -79,30 +54,26 @@ export function supprimeClient(id) {
   if (!client) {
     return {
       ok: false,
-      erreurs: ["Client introuvable."],
+      erreurs: { general: "Client introuvable." },
     };
   }
-  const solde = state.operations
-    .filter((operation) => operation.clientId === id)
-    .reduce((total, operation) => {
-      if (operation.type === "achat") {
-        return total + operation.montant;
-      }
 
-      return total - operation.montant;
-    }, 0);
+  // US-01 : Un client qui doit de l'argent ne peut pas être supprimé
+  const solde = calculerSolde(id, state.operations);
   if (solde > 0) {
     return {
       ok: false,
-      erreurs: [
-        "Impossible de supprimer un client qui doit encore de l'argent.",
-      ],
+      erreurs: {
+        general: "Impossible de supprimer un client qui doit encore de l'argent.",
+      },
     };
   }
+
+  // Supprimer les opérations associées puis le client
   state.operations = state.operations.filter(
     (operation) => operation.clientId !== id,
   );
-  state.clients = state.clients.filter((client) => client.id !== id);
+  state.clients = state.clients.filter((c) => c.id !== id);
 
   return {
     ok: true,
