@@ -36,12 +36,22 @@ export function validateMontant(montant) {
 }
 
 export function validatePlafond(plafond) {
-  plafond = plafond.trim();
-  if (!montantRegex.test(plafond)) return { status: "invalid" };
-  plafond = Number(plafond.replace(",", "."));
-  if (plafond < 50.0 || plafond > 10000) {
+  if (typeof plafond === "number" && Number.isInteger(plafond)) {
+    if (plafond >= 5000 && plafond <= 1000000) {
+      return { status: "valid" };
+    }
     return { status: "invalid" };
   }
+  const texte = String(plafond || "").trim();
+  if (!montantRegex.test(texte)) {
+    return { status: "invalid" };
+  }
+
+  const valeurMAD = Number(texte.replace(",", "."));
+  if (valeurMAD < 50.0 || valeurMAD > 10000.0) {
+    return { status: "invalid" };
+  }
+
   return { status: "valid" };
 }
 
@@ -174,7 +184,9 @@ export function validateData(data) {
   }
 
   if (data.app !== "karni" || data.version !== 1) {
-    erreurs.push("Format incompatible : l'application doit être 'karni' et la version 1.");
+    erreurs.push(
+      "Format incompatible : l'application doit être 'karni' et la version 1.",
+    );
   }
 
   if (!Array.isArray(data.clients)) {
@@ -209,9 +221,14 @@ export function validateData(data) {
     }
 
     if (validateName(client.nom).status === "invalid") {
-      erreurs.push(`${repere}.nom : doit contenir entre 2 et 40 lettres, espaces ou tirets.`);
+      erreurs.push(
+        `${repere}.nom : doit contenir entre 2 et 40 lettres, espaces ou tirets.`,
+      );
     } else {
-      const nomNorm = (client.nom || "").trim().toLowerCase().replace(/\s+/g, "");
+      const nomNorm = (client.nom || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "");
       if (nomsClients.has(nomNorm)) {
         erreurs.push(`${repere}.nom : nom en doublon.`);
       } else {
@@ -220,15 +237,21 @@ export function validateData(data) {
     }
 
     if (validatePhone(client.telephone).status === "invalid") {
-      erreurs.push(`${repere}.telephone : vide ou 05, 06, 07 suivi de 8 chiffres.`);
+      erreurs.push(
+        `${repere}.telephone : vide ou 05, 06, 07 suivi de 8 chiffres.`,
+      );
     }
 
     if (validatePlafond(client.plafond).status === "invalid") {
-      erreurs.push(`${repere}.plafond : doit être un entier entre 5 000 et 1 000 000 centimes (50 à 10 000 MAD).`);
+      erreurs.push(
+        `${repere}.plafond : doit être un entier entre 5 000 et 1 000 000 centimes (50 à 10 000 MAD).`,
+      );
     }
 
     if (validateDate(client.creeLe).status === "invalid") {
-      erreurs.push(`${repere}.creeLe : date invalide ou dans le futur (AAAA-MM-JJ).`);
+      erreurs.push(
+        `${repere}.creeLe : date invalide ou dans le futur (AAAA-MM-JJ).`,
+      );
     }
   });
 
@@ -252,23 +275,35 @@ export function validateData(data) {
     }
 
     if (!clientIds.has(op.clientId)) {
-      erreurs.push(`${repere}.clientId : fait référence à un client inexistant.`);
+      erreurs.push(
+        `${repere}.clientId : fait référence à un client inexistant.`,
+      );
     }
 
     if (op.type !== "achat" && op.type !== "remboursement") {
       erreurs.push(`${repere}.type : doit être 'achat' ou 'remboursement'.`);
     }
 
-    if (!Number.isInteger(op.montant) || op.montant < 1 || op.montant > 1000000) {
-      erreurs.push(`${repere}.montant : doit être un entier positif entre 1 et 1 000 000 centimes.`);
+    if (
+      !Number.isInteger(op.montant) ||
+      op.montant < 1 ||
+      op.montant > 1000000
+    ) {
+      erreurs.push(
+        `${repere}.montant : doit être un entier positif entre 1 et 1 000 000 centimes.`,
+      );
     }
 
     if (validateLibelle(op.libelle || "", op.type).status === "invalid") {
-      erreurs.push(`${repere}.libelle : maximum 60 caractères (au moins 2 pour un achat).`);
+      erreurs.push(
+        `${repere}.libelle : maximum 60 caractères (au moins 2 pour un achat).`,
+      );
     }
 
     if (validateDate(op.date).status === "invalid") {
-      erreurs.push(`${repere}.date : date invalide ou dans le futur (AAAA-MM-JJ).`);
+      erreurs.push(
+        `${repere}.date : date invalide ou dans le futur (AAAA-MM-JJ).`,
+      );
     }
   });
 
