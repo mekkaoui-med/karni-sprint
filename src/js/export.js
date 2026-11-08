@@ -1,13 +1,13 @@
 import { state } from "./state.js";
 export function exportData() {
   const donnes = {
-    app: "karni-v1",
+    app: "karni",
     version: 1,
     exporteLe: new Date().toISOString(),
     clients: state.clients,
     operations: state.operations,
   };
-  const contenu = JSON.stringify(contenu, null, 2);
+  const contenu = JSON.stringify(donnes, null, 2);
   const ficher = new Blob([contenu], {
     type: "application/json",
   });
