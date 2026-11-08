@@ -3,9 +3,8 @@ import { state } from "./state.js";
 import { sauvegarder } from "./storage.js";
 
 export function preparerImport(fichier) {
-  // A Promise allows us to return a result later, when the reading and validation are finished.
-  // We use resolve when we finish processing the file.
   return new Promise(function (resolve) {
+    // 1. Vérifier si un fichier est sélectionné
     if (!fichier) {
       resolve({
         ok: false,
@@ -14,18 +13,18 @@ export function preparerImport(fichier) {
       return;
     }
 
-    if (!fichier.name.toLowerCase().endsWith(".json")) {
+    // 2. Vérifier que c'est un fichier JSON
+    if (!fichier.name.endsWith(".json")) {
       resolve({
         ok: false,
-        errors: ["Le fichier doit être au format JSON."],
+        errors: ["Le fichier doit être au format .json."],
       });
       return;
     }
 
-    // FileReader is a built-in JavaScript browser object used to read files selected by the user.
+    // 3. Lire le contenu du fichier
     const lecteur = new FileReader();
 
-    // onerror is an event handler "If an error happens while reading this file, execute this function."
     lecteur.onerror = function () {
       resolve({
         ok: false,
@@ -33,13 +32,13 @@ export function preparerImport(fichier) {
       });
     };
 
-    //executes when reading succeeds.
     lecteur.onload = function () {
       let donnees;
 
+      // 4. Transformer le texte en objet JSON
       try {
         donnees = JSON.parse(lecteur.result);
-      } catch {
+      } catch (e) {
         resolve({
           ok: false,
           errors: ["Le fichier JSON est invalide."],
@@ -47,31 +46,41 @@ export function preparerImport(fichier) {
         return;
       }
 
-      const validation = validateData(donnees);
+      // 5. Valider les données
+      const resultat = validateData(donnees);
+      let listeErreurs = [];
 
-      if (validation.status === "invalid") {
-        const erreurs = Object.entries(validation.errors).map(
-          function ([champ, message]) {
-            return `${champ} : ${message}`;
-          },
-          // champ = "clients[0].nom";
-          // // message = "Nom invalide";
-        );
+      // Si validateData renvoie un tableau
+      if (Array.isArray(resultat)) {
+        listeErreurs = resultat;
+      }
+      // Si validateData renvoie un objet { status: "invalid", errors: { ... } }
+      else if (resultat.status === "invalid") {
+        for (const champ in resultat.errors) {
+          listeErreurs.push(champ + " : " + resultat.errors[champ]);
+        }
+      }
 
+      // 6. Si des erreurs existent, renvoyer les 10 premières (US-07)
+      if (listeErreurs.length > 0) {
         resolve({
           ok: false,
-          errors: erreurs.slice(0, 10),
+          errors: listeErreurs.slice(0, 10),
         });
         return;
       }
 
-      // Return the valid data and its summary
+      // 7. Si tout est valide, préparer le résumé
+      const nbClients = donnees.clients.length;
+      const nbOperations = donnees.operations.length;
+
       resolve({
         ok: true,
-        donnees,
+        donnees: donnees,
         resume: {
-          nombreClients: donnees.clients.length,
-          nombreOperations: donnees.operations.length,
+          nombreClients: nbClients,
+          nombreOperations: nbOperations,
+          texte: nbClients + " clients, " + nbOperations + " opérations",
         },
       });
     };
@@ -81,13 +90,14 @@ export function preparerImport(fichier) {
 }
 
 export function confirmerImport(donnees) {
+  // Remplacer les données dans l'état
   state.clients = donnees.clients;
   state.operations = donnees.operations;
 
-  const resultat = sauvegarder(state); //The function saves those data in localStorage.
-
-  if (!resultat.ok) {
-    return resultat;
+  // Sauvegarder dans localStorage
+  const resultatSauvegarde = sauvegarder(state);
+  if (!resultatSauvegarde.ok) {
+    return resultatSauvegarde;
   }
 
   return { ok: true };
