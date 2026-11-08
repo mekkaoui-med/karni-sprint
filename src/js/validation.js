@@ -36,14 +36,27 @@ export function validateMontant(montant) {
 }
 
 export function validatePlafond(plafond) {
-  plafond = plafond.trim();
-  if (!montantRegex.test(plafond)) return { status: "invalid" };
-  plafond = Number(plafond.replace(",", "."));
-  if (plafond < 50.0 || plafond > 10000) {
+ 
+  if (typeof plafond === "number" && Number.isInteger(plafond)) {
+    if (plafond >= 5000 && plafond <= 1000000) {
+      return { status: "valid" };
+    }
     return { status: "invalid" };
   }
+
+  const texte = String(plafond || "").trim();
+  if (!montantRegex.test(texte)) {
+    return { status: "invalid" };
+  }
+
+  const valeurMAD = Number(texte.replace(",", "."));
+  if (valeurMAD < 50.0 || valeurMAD > 10000.0) {
+    return { status: "invalid" };
+  }
+
   return { status: "valid" };
 }
+
 
 export function validateDate(date) {
   date = new Date(date);
