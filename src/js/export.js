@@ -1,4 +1,4 @@
-export { statea } from "./state.js";
+import { state } from "./state.js";
 export function exportData() {
   const donnes = {
     app: "karni-v1",
@@ -17,7 +17,7 @@ export function exportData() {
   lien.href = url;
 
   const date = new Date().toISOString().slice(0, 10);
-  lien.download = `karni-${data}.json`;
+  lien.download = `karni-${date}.json`;
 
   document.body.appendChild(lien)
   lien.click();
