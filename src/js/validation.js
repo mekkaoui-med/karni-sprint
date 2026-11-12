@@ -197,10 +197,8 @@ export function validateData(data) {
     erreurs.push("operations : doit être un tableau.");
   }
 
-  // Si la structure racine est cassée, on s'arrête là
   if (erreurs.length > 0) return erreurs;
 
-  // 2. Validation de chaque client
   const clientIds = new Set();
   const nomsClients = new Set();
 
@@ -255,7 +253,6 @@ export function validateData(data) {
     }
   });
 
-  // 3. Validation de chaque opération
   const opIds = new Set();
 
   data.operations.forEach((op, index) => {
@@ -307,6 +304,5 @@ export function validateData(data) {
     }
   });
 
-  // Renvoie [] si valide, ou la liste des erreurs
   return erreurs;
 }
